@@ -1,34 +1,41 @@
 ---
 name: writing-polish
 description: >
-  Writing review, polish, and revision based on professional Chinese writing methodology (《怎样写作》任仲然).
-  Use this skill whenever the user wants to review, polish, improve, optimize, or revise any writing —
-  including articles, documents, speeches, reports, essays, social media posts, notices, or any text content.
-  Also trigger when the user says "润色", "修改文稿", "审稿", "改稿", "帮我看看这篇文章", "优化一下",
-  "文稿优化", "写作审查", "DOCX 修订", "修改 Word 文档", "修订模式编辑", "用修订模式润色",
-  "polish this", "review my writing", "improve this draft", "edit this",
-  "proofread", "check my writing", "make this better", "redline this document",
-  "Track Changes", "edit this docx", or provides a Markdown/DOCX file asking for
-  quality improvement or feedback. Works with any language, any genre (公文、讲话稿、调研报告、述职报告、
-  随笔杂文、自媒体 etc.), and any format (Markdown, DOCX, plain text). Covers both light polish
-  (语言润色) and deep structural revision (结构性修改). When editing DOCX files, defaults to
-  Track Changes (revision mode) with author "任仲然", both configurable by user.
+  Reviews, polishes, revises, and assists in writing Chinese documents based on professional
+  methodology from 《怎样写作》(任仲然). Trigger when the user wants to review, polish,
+  improve, revise, or write any text content including articles, speeches, reports, essays,
+  or social media posts. Also trigger on: "润色", "修改文稿", "审稿", "改稿", "帮我看看这篇文章",
+  "优化一下", "文稿优化", "写作审查", "帮我写", "帮我起草", "搭个提纲", "DOCX 修订",
+  "修改 Word 文档", "修订模式编辑", "用修订模式润色", "polish this", "review my writing",
+  "improve this draft", "edit this", "proofread", "check my writing", "make this better",
+  "redline this document", "Track Changes", "edit this docx", "help me write", "draft this",
+  "write an outline". Works with any language, any genre, and any format including Markdown,
+  DOCX, and plain text. Covers writing assistance (from outlining to drafting), light polish,
+  and deep structural revision. When editing DOCX files, defaults to Track Changes with
+  author "任仲然", both configurable by user.
   Do NOT trigger for translation tasks, code review, or data analysis.
 ---
 
 # 写作润色审稿
 
-基于《怎样写作》(任仲然)的系统化写作审稿方法论。核心理念：
+基于《怎样写作》（任仲然）的系统化写作方法论。核心理念：
 
 > "好文稿好文章无疑是写出来的，但更重要的是改出来的。"
 > "热写稿，冷改稿。"
 
+## 判断用户需求
+
+收到用户请求后，首先判断需求类型：
+
+- **写作辅助**：用户说"帮我写""帮我起草""搭个提纲" → 进入写作辅助工作流
+- **审稿润色**：用户提供了现成文稿要求修改 → 进入审稿润色工作流
+
 ## 文件处理
 
-- **Markdown / 纯文本**: 直接用 Read 工具读取
-- **用户直接粘贴的文本**: 直接分析，无需文件操作
-- **多个文件**: 逐个处理，保持全套文件风格一致性
-- **DOCX 文件**: 根据操作需求选择路线（详见下方决策树）
+- **Markdown / 纯文本**：直接用 Read 工具读取
+- **用户直接粘贴的文本**：直接分析，无需文件操作
+- **多个文件**：逐个处理，保持全套文件风格一致性
+- **DOCX 文件**：根据操作需求选择路线，详见下方决策树
 
 ### DOCX 处理决策树
 
@@ -45,11 +52,50 @@ description: >
 ### DOCX 编辑默认设定
 
 - **默认启用 Track Changes**（修订模式），除非用户明确要求直接修改
-- **默认修订作者**: `"任仲然"`，用户可通过"用 XX 的名义修改"等方式指定其他名称
-- **编辑工具**: `docx-editor` Python 库（`pip install docx-editor python-docx`）
-- **核心原则**: 最小化修改标记、保留原始格式、Run 级别操作
+- **默认修订作者**：`"任仲然"`，用户可通过"用 XX 的名义修改"等方式指定其他名称
+- **编辑工具**：`docx-editor` Python 库（`pip install docx-editor python-docx`）
+- **核心原则**：最小化修改标记、保留原始格式、Run 级别操作
 
-## 工作流程
+---
+
+## 写作辅助工作流
+
+当用户需要从零开始写作或搭建框架时，按以下步骤辅助。如需深入的方法论指导，阅读 `references/writing-methodology.md`。
+
+### 第一步：明确写作任务
+
+1. 确认文体类型，阅读 `references/genre-guide.md` 中对应章节获取文体专属标准
+2. 确认写作目的和受众
+3. 确认用户希望的深度：搭提纲、写初稿、还是完整成稿
+
+### 第二步：立意与构思
+
+- 帮助用户锁定一个核心问题，选择独有而新鲜的角度
+- 避免"全而又全"的陷阱：一事一文，聚焦重点
+- 选小切口展大思路，确定写作的切入点
+
+### 第三步：搭建提纲
+
+- **粗纲**：搭建框架，拟定各级标题，解决内容与结构的匹配
+- **细纲**：在粗纲基础上提炼基本判断和思想观点
+- 越往上一级标题越要有高度，越往下一级越要有实度
+- 三四级标题不必过早雕琢，全文写差不多了再细抠
+
+### 第四步：充实内容
+
+- 事实事例要典型，不能重复同类。"解剖三五十只麻雀不如换一只小白鼠"
+- 数据及比例要用到位，抽象叙述不如具体数据有"实在感"
+- 材料与观点要协调统一：不能只堆材料缺观点，也不能有观点无材料
+
+### 第五步：语言定调
+
+- 根据文体和受众确定语言风格
+- 朴实原则：少修饰语、忌生僻词、不绕圈子
+- 整齐美与参差美交替出现效果最佳
+
+---
+
+## 审稿润色工作流
 
 ### 第一步：通读与识别
 
@@ -59,9 +105,9 @@ description: >
 2. 识别文体类型（公文/讲话稿/调研报告/述职报告/汇报稿/发言稿/随笔杂文/自媒体/通用文章）
 3. 理解写作目的和受众
 4. 判断用户需要的修改深度：
-   - **轻度润色**: 用户说"润色""polish""改改语言" → 侧重语言和表达
-   - **深度修改**: 用户说"帮我改改""审稿""review" → 全面审查
-   - **结构重建**: 用户说"这篇写得不好""重新组织" → 可能需要大改
+   - **轻度润色**：用户说"润色""polish""改改语言" → 侧重语言和表达
+   - **深度修改**：用户说"帮我改改""审稿""review" → 全面审查
+   - **结构重建**：用户说"这篇写得不好""重新组织" → 可能需要大改
 
 如果识别出特定文体，阅读 `references/genre-guide.md` 中对应章节以获取文体专属审查标准。
 
@@ -95,7 +141,7 @@ description: >
 结构是文稿的四梁八柱。深入分析见 `references/logic-and-structure.md`。
 
 - "四梁八柱"是否稳妥结实？有无歪斜？
-- 各部分比重是否均衡？不能某块1500字，某块150字
+- 各部分比重是否均衡？不能某块 1500 字，某块 150 字
 - 层级是否适当？不过多也不过少
 - 是否陷入死板的"三大块"套路？实际需要几块就几块
 - 结构是否为内容服务？"不能给报告套上碍手碍脚的夹板"
@@ -110,6 +156,18 @@ description: >
 - 有无：概念口径不一致 / 因果倒置 / 自相矛盾 / 前后重复 / 循环论证？
 - "写到下句不管上句，写到后面不管前面"，前后是否衔接连贯？
 
+#### 2.5 多维审视（五种思维方式）
+
+用五种思维方式从不同维度审视文稿，发现单一视角下看不到的问题：
+
+| 思维方式 | 审什么 | 具体问题 |
+|---------|--------|---------|
+| 系统工程思维 | 整体性 | 文稿作为系统是否完整有序？有无碎片化？ |
+| 唯物辩证思维 | 多维度 | 是否只从一个角度论述？有无辩证分析？ |
+| 形象想象思维 | 生动性 | 有无恰当比喻？抽象论题是否写得活？ |
+| 创意创新思维 | 新意 | 是否在炒冷饭？有无跳出惯性思维？ |
+| 逻辑思维 | 推理 | 概念是否清晰？因果是否成立？ |
+
 ### 第三步：细节打磨（再从小处着手）
 
 大的问题解决后，进入精雕细刻阶段。
@@ -118,17 +176,17 @@ description: >
 
 朴实睿智的语言：精辟得体。
 
-- **删**: 空话虚话废话、修饰过度、太长的句子、生僻词
-- **改**: 生造词汇、乱用术语、词不达意、翻译腔长句（"逗号到底"）
-- **保留**: 作者的个人风格和语言特色，尊重原作者的精神劳动成果
+- **删**：空话虚话废话、修饰过度、太长的句子、生僻词
+- **改**：生造词汇、乱用术语、词不达意、翻译腔长句（"逗号到底"）
+- **保留**：作者的个人风格和语言特色，尊重原作者的精神劳动成果
 - 用排除法检验朴实：少修饰语、忌生僻词、不绕圈子、不赶时髦、不搞文字游戏
 - 整齐美与参差美交替出现效果最佳
 
 #### 3.2 表达方式
 
-- **叙述**: 求实求真，情真意切？事实事例是否具体生动？
-- **议论**: 文以载道？归纳/演绎/类比/因果/举例法是否运用得当？
-- **说明**: 言简意赅，特点突出？
+- **叙述**：求实求真，情真意切？事实事例是否具体生动？
+- **议论**：文以载道？归纳/演绎/类比/因果/举例法是否运用得当？
+- **说明**：言简意赅，特点突出？
 
 #### 3.3 字斟句酌
 
@@ -146,16 +204,17 @@ description: >
 | 正确 | 错误 | 说明 |
 |------|------|------|
 | ，。、；：！？ | , . ; : ! ? | 全角中文标点 |
-| “”（上下引号） | “”（垂直引号） | **严禁使用英文直引号** |
-| ‘’（单引号） | ‘’（垂直单引号） | 中文单引号用于引号内的引号 |
+| ""（上下引号） | ""（垂直引号） | **严禁使用英文直引号** |
+| ''（单引号） | ''（垂直单引号） | 中文单引号用于引号内的引号 |
 | ：（中文冒号） | :（英文冒号） | 句中解释说明用中文冒号 |
 | ……（省略号） | ...（英文省略号） | 中文省略号占两个字位 |
 
 **英文上下文、数字、日期时间**：遵循英语标点规范。
-- 日期：2026-03-16 或 2026 年 3 月 16 日
+- 日期：2026-03-16 或 2026 年 3 月 16 日（公文中时间节点要具体到日）
 - 时间：14:30（英文冒号）
 - 数字千分位：1,000,000（英文逗号）
 - 英文引用中使用英文引号
+- 公文标题层级编号用中文数字（一、二、三），正文统计数据用阿拉伯数字
 
 **混排原则**：中文句子中嵌入英文单词时，标点跟随所在句子的语言。
 
@@ -217,6 +276,8 @@ description: >
 4. 验证输出文件：`pandoc --track-changes=all output.docx -t markdown --wrap=none`
 5. 同时输出审查报告（Markdown 格式），方便用户对照审阅
 
+**建议用户"念改"**：审稿完成后，建议用户边念边改，口耳并用，往往能发现默看时漏掉的问题。
+
 ---
 
 ## 快速参考：常见问题速查
@@ -228,11 +289,11 @@ description: >
 | 武断下结论 | 断言后找不到依据 | 补充证据或软化表述 |
 | 跑题离题 | 段落不服务于主题 | 果断删除 |
 | 老生常谈 | 众所周知的内容占大量篇幅 | 大力删减 |
-| 缺少新意 | 读后无新收获 | 补充独到见解和新鲜内容 |
-| 结构失衡 | 某部分篇幅是其他部分10倍 | 重新均衡或合并拆分 |
-| 逗号到底 | 一句话5个以上从句 | 断成短句 |
+| 缺少新意 | 读后无新收获 | 从不同角度和不同层级分析表述事物，跳出惯性思维 |
+| 结构失衡 | 某部分篇幅是其他部分 10 倍 | 重新均衡或合并拆分 |
+| 逗号到底 | 一句话 5 个以上从句 | 断成短句 |
 | 生造术语 | 读者不理解的自创词汇 | 替换为通用表达 |
-| 有骨无肉 | 只有观点没有事例支撑 | 补充典型事例和数据 |
+| 有骨无肉 | 只有观点没有事例支撑 | 补充典型事例和数据，用数据及比例增强"实在感" |
 
 ---
 
@@ -251,5 +312,7 @@ description: >
 **两个标准：求精、求准**。精：主题厚实深邃，思想精确无误，文辞精彩朴实。准：事实准确，判断精准，每段话都有风险意识。
 
 **尊重原作**。可改可不改的就不改。改别人的文稿要尊重精神劳动成果。但该改的一定要改到位。
+
+**换位修改**。从受众角度审视：受众能看懂吗？能记住什么？从批评者角度审视：有没有经不起推敲的地方？
 
 **改到位的标志**。"改得没什么可改的了，乃至发现个别改过的词句又改回来的时候，那就算定稿了。"
