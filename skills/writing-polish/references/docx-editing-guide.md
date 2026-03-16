@@ -8,8 +8,8 @@
 
 | 任务 | 推荐工具 |
 |------|----------|
-| 读取/分析内容 | `pandoc` — 转 Markdown 后分析 |
-| 浏览文档结构（大文档定位） | `python-docx` — 遍历段落/表格 |
+| 读取/分析内容 | `pandoc`，转 Markdown 后分析 |
+| 浏览文档结构（大文档定位） | `python-docx`，遍历段落/表格 |
 | 创建新文档 | `python-docx`；公文格式见 `references/gongwen-format.md` |
 | 编辑现有文档（Track Changes）| `docx-editor` ★推荐 |
 | 编辑页眉页脚/嵌入图片等 | 手动 OOXML 操作（见第七节）|
@@ -185,8 +185,8 @@ document.docx (ZIP)
 ```
 
 核心结构层级：**段落 `<w:p>`** → **Run `<w:r>`** → **文本 `<w:t>`**
-- Run 是格式的最小单位，每个 Run 的 `<w:rPr>` 定义其格式（粗体、字号、颜色等）
-- Word 经常将连续文本拆分成多个 Run（拼写检查、格式变更等都会导致拆分）
+- Run 是格式的最小单位，每个 Run 的 `<w:rPr>` 定义其格式，包括粗体、字号、颜色等
+- Word 经常将连续文本拆分成多个 Run，拼写检查、格式变更等都会导致拆分
 
 ### 5.2 Track Changes XML 标记
 
@@ -230,7 +230,7 @@ document.docx (ZIP)
 
 | 问题 | 解决方案 |
 |------|----------|
-| `python-docx` 无法处理 Track Changes | 用 `docx-editor` 替代（python-docx Issue #340 自 2016 年至今未实现）|
+| `python-docx` 无法处理 Track Changes | 用 `docx-editor` 替代，python-docx Issue #340 自 2016 年至今未实现 |
 | 段落级文本替换导致格式丢失 | `docx-editor` 自动在 Run 级操作，无此问题 |
 | 文本跨多个 Run 拆分，找不到 | `docx-editor` 自动处理跨 Run 边界匹配 |
 | Track Changes ID 冲突 | `docx-editor` 自动扫描已有最大 ID 并递增 |
@@ -243,7 +243,7 @@ document.docx (ZIP)
 
 ## 七、手动 OOXML 编辑（高级备用）
 
-当 `docx-editor` 无法满足需求时（如操作页眉页脚、嵌入图片、修改样式等），可回退到手动 OOXML 操作：
+当 `docx-editor` 无法满足需求时，比如操作页眉页脚、嵌入图片、修改样式等场景，可回退到手动 OOXML 操作：
 
 ```bash
 # 1. 解包
@@ -260,9 +260,6 @@ cd unpacked && zip -r ../output.docx . && cd ..
 # 4. 验证
 pandoc --track-changes=all output.docx -t markdown --wrap=none -o verify.md
 ```
-
-详细 OOXML 操作指南（Track Changes XML 构造、RSID 机制、安全打包等）见项目根目录：
-**《DOCX操作最佳实践-AI工具参考指南.md》**
 
 ---
 
@@ -293,8 +290,8 @@ pandoc --track-changes=all output.docx -t markdown --wrap=none -o verify.md
 
 Anthropic 官方提供两个版本的 DOCX skill：
 
-1. **原始版**（`anthropics/skills/docx`）：使用 Edit 工具直接修改解包后的 XML
-   - 依赖官方自定义脚本（`scripts/office/unpack.py`、`pack.py`、`comment.py`）
+1. **原始版** `anthropics/skills/docx`：使用 Edit 工具直接修改解包后的 XML
+   - 依赖官方自定义脚本 `scripts/office/unpack.py`、`pack.py`、`comment.py`
    - 这些脚本不在公开 pip 包中，第三方 skill 无法使用
 
 2. **docx-editor 版**（`pablospe/docx-editor`）：使用 `docx-editor` Python 库
