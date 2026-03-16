@@ -1,0 +1,22 @@
+{
+  "name": "zen-yang-xie-zuo",
+  "owner": {
+    "name": "sinnohzeng"
+  },
+  "metadata": {
+    "description": "Professional writing assistance and revision tools based on 《怎样写作》(任仲然)"
+  },
+  "plugins": [
+    {
+      "name": "writing-polish",
+      "source": "./",
+      "description": "Professional writing assistance and revision skill. 基于《怎样写作》专业方法论的写作辅助与审稿润色技能。",
+      "version": "2.0.0",
+      "author": {
+        "name": "sinnohzeng"
+      },
+      "keywords": ["writing", "editing", "polish", "revision", "docx", "chinese"],
+      "category": "writing"
+    }
+  ]
+}

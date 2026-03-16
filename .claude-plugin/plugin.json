@@ -1,6 +1,12 @@
 {
-  "name": "zen-yang-xie-zuo",
-  "version": "1.0.0",
-  "description": "Writing review, polish, and revision skill based on 《怎样写作》(任仲然). 基于专业写作方法论的写作润色审稿技能。",
-  "author": "sinnohzeng"
+  "name": "writing-polish",
+  "version": "2.0.0",
+  "description": "Professional writing assistance and revision skill based on 《怎样写作》(任仲然). 基于专业写作方法论的写作辅助与审稿润色技能。",
+  "author": {
+    "name": "sinnohzeng"
+  },
+  "repository": "https://github.com/sinnohzeng/zen-yang-xie-zuo",
+  "license": "MIT",
+  "keywords": ["writing", "editing", "polish", "revision", "docx", "chinese"],
+  "skills": "./skills/"
 }
