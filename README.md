@@ -210,6 +210,10 @@
 
 本技能原生为 Claude Code 设计，同时也可在其他主流 AI 编程工具中使用。
 
+### Claude 网页端（claude.ai）
+
+从 [GitHub Releases](https://github.com/sinnohzeng/zen-yang-xie-zuo/releases) 下载最新的 `writing-polish.zip`，然后在 [claude.ai/customize/skills](https://claude.ai/customize/skills) 中上传即可。网页端需要开启代码执行功能，DOCX 编辑等高级功能才能正常使用。
+
 ### Claude Code
 
 #### Marketplace 安装（推荐）
@@ -345,6 +349,7 @@ cp zen-yang-xie-zuo/skills/writing-polish/references/*.md .augment/rules/
 
 | 工具 | 规则目录 | 文件格式 | 字符限制 |
 |------|---------|---------|---------|
+| Claude 网页端 | Customize > Skills 上传 ZIP | Markdown（SKILL.md） | description ≤200 字符 |
 | Claude Code | `~/.claude/skills/` 或 Plugin | Markdown | 无硬性限制 |
 | TRAE | `.trae/rules/` | Markdown | 未公开 |
 | Cursor | `.cursor/rules/` | `.mdc`（Markdown + YAML 头部） | 未公开 |

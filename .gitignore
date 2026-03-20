@@ -37,3 +37,6 @@ Desktop.ini
 # 测试文件
 test/
 firebase-debug.log
+
+# 构建产物
+*.zip
