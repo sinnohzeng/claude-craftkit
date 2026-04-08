@@ -33,6 +33,11 @@ Thumbs.db
 ehthumbs.db
 Desktop.ini
 
+# Environment & secrets (防护性排除)
+.env
+.env.*
+*.secret
+
 # 原始参考文档
 《怎样写作》任仲然.md
 

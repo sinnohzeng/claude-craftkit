@@ -1,0 +1,76 @@
+name: "Bug 报告 Bug Report"
+description: "报告一个 Bug Report a bug"
+labels: ["bug"]
+body:
+  - type: dropdown
+    id: plugin
+    attributes:
+      label: "插件 Plugin"
+      options:
+        - writing-polish
+        - workflow-toolkit
+    validations:
+      required: true
+
+  - type: input
+    id: skill
+    attributes:
+      label: "技能名称 Skill Name"
+      description: "触发的技能，如 /commit、/writing-polish"
+      placeholder: "/commit"
+    validations:
+      required: false
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: "复现步骤 Steps to Reproduce"
+      value: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: "预期行为 Expected Behavior"
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: "实际行为 Actual Behavior"
+    validations:
+      required: true
+
+  - type: input
+    id: claude-code-version
+    attributes:
+      label: "Claude Code 版本 Version"
+      placeholder: "claude-code 1.x.x"
+    validations:
+      required: false
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: "操作系统 OS"
+      options:
+        - macOS
+        - Linux
+        - Windows (WSL)
+    validations:
+      required: false
+
+  - type: dropdown
+    id: install-method
+    attributes:
+      label: "安装方式 Installation Method"
+      options:
+        - Marketplace
+        - "Local symlink (setup.sh)"
+    validations:
+      required: false
