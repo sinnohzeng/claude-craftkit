@@ -1,8 +1,8 @@
-# Claude Craftkit
+# 轩匠 Xuan-Jiang
 
 **把专业方法论注入 AI —— 让 Claude Code 不只是写得快，而是写得对、改得准。**
 
-Claude Craftkit 是一个 Claude Code 技能集，包含两个插件。其中 **writing-polish** 将任仲然 40 年公文写作方法论（《怎样写作》）转化为 AI 可执行的写作与审稿工作流；**workflow-toolkit** 则覆盖开发者日常工作流的全生命周期。
+轩匠（Xuan-Jiang）是一个 Claude Code 技能集，包含两个插件。其中 **writing-polish** 将任仲然 40 年公文写作方法论（《怎样写作》）转化为 AI 可执行的写作与审稿工作流；**workflow-toolkit** 则覆盖开发者日常工作流的全生命周期。
 
 | Plugin | Skills | What it does |
 |--------|:------:|-------------|
@@ -17,11 +17,11 @@ Claude Craftkit 是一个 Claude Code 技能集，包含两个插件。其中 **
 
 ```bash
 # 注册 marketplace（一次性）
-claude plugin marketplace add https://github.com/sinnohzeng/claude-craftkit.git
+claude plugin marketplace add https://github.com/sinnohzeng/xuan-jiang.git
 
 # 按需安装
-claude plugin install writing-polish@claude-craftkit
-claude plugin install workflow-toolkit@claude-craftkit
+claude plugin install writing-polish@xuan-jiang
+claude plugin install workflow-toolkit@xuan-jiang
 ```
 
 **本地 symlink（短命令）**
@@ -29,8 +29,8 @@ claude plugin install workflow-toolkit@claude-craftkit
 用 `/commit` 代替 `/workflow-toolkit:commit`，用 `/runse` 代替 `/writing-polish:writing-polish`：
 
 ```bash
-git clone https://github.com/sinnohzeng/claude-craftkit.git
-cd claude-craftkit && ./setup.sh
+git clone https://github.com/sinnohzeng/xuan-jiang.git
+cd xuan-jiang && ./setup.sh
 ```
 
 ---
