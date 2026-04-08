@@ -1,0 +1,12 @@
+{
+  "name": "workflow-toolkit",
+  "version": "1.0.0",
+  "description": "Developer workflow skills for daily Claude Code interactions",
+  "author": {
+    "name": "sinnohzeng"
+  },
+  "repository": "https://github.com/sinnohzeng/claude-craftkit",
+  "license": "MIT",
+  "keywords": ["workflow", "commit", "ci", "documentation", "review", "wrap-up"],
+  "skills": "./skills/"
+}

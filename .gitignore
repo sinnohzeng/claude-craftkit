@@ -5,11 +5,13 @@
 # Firecrawl cache (web scraping results)
 .firecrawl/
 
+# Remember plugin cache
+.remember/
+
 # Python
 __pycache__/
 *.py[cod]
 *.egg-info/
-dist/
 build/
 *.egg
 .venv/
@@ -38,5 +40,6 @@ Desktop.ini
 test/
 firebase-debug.log
 
-# 构建产物
+# 构建产物（不排除 plugins/*/dist/）
+/dist/
 *.zip
