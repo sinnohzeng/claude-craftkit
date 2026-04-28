@@ -1,7 +1,7 @@
 {
   "name": "writing-polish",
-  "version": "4.0.0",
-  "description": "Professional Chinese writing skill based on 《怎样写作》(任仲然) methodology with 110-rule anti-AI-taste enforcement. 基于专业方法论的写作辅助与审稿润色，含 110 条 AI 味硬约束 + 8 范文锚点 + 三层防御。",
+  "version": "4.2.0",
+  "description": "Professional Chinese writing skill based on 《怎样写作》(任仲然) methodology with 230+ anti-AI-taste rules. 基于专业方法论的中文写作辅助与审稿润色，配套 230 余条 AI 味规则、scripts/scan-ai-taste.sh 自动校验、7 大文体专属审稿标准。",
   "author": {
     "name": "sinnohzeng"
   },
