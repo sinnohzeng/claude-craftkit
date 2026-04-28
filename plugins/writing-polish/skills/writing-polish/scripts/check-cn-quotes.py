@@ -23,7 +23,7 @@ RESERVED_TERMS = {
     'GitHub', 'GB', 'GBT', 'DOCX', 'Markdown', 'YAML', 'JSON', 'API',
     'SKILL', 'README', 'LICENSE', 'CONTRIBUTING', 'SECURITY',
     'Anthropic', 'Claude', 'ChatGPT', 'Wikipedia', 'OpenAI',
-    'Firecrawl', 'GPTZero',
+    'Firecrawl', 'GPTZero', 'Originality',
     'pandoc', 'python', 'docx', 'editor', 'pip', 'pre',
     'L1', 'L2', 'L3', 'PASS', 'FAIL', 'WARN',
     'PDF', 'CSV', 'XML', 'HTML', 'CSS',
@@ -31,6 +31,17 @@ RESERVED_TERMS = {
     'AI', 'RLHF', 'TOC', 'CI', 'OOXML',
     'MIT', 'GPL', 'URL', 'TTL', 'CDN',
     'OpenAI', 'Cursor', 'Windsurf', 'Cline', 'Copilot',
+    # v4.2 新增：本仓库高频术语
+    'frontmatter', 'track', 'changes', 'PEP', 'YAML',
+    'PMF', 'MVP', 'OKR', 'KPI', 'PR', 'CR', 'QA', 'UX',
+    'DRC', 'BP', 'DOCX',
+    'Grok', 'Gemini', 'Sonnet', 'Opus', 'Haiku',
+    'MCP', 'CLI', 'IDE', 'SDK', 'CDN',
+    'commit', 'push', 'pull', 'fetch', 'merge',  # git terms
+    'Skill', 'skills',  # Anthropic Agent Skills
+    'YAML', 'TOML', 'INI',
+    'NPM', 'PyPI',
+    'http', 'https', 'www', 'com', 'cn', 'org',
 }
 
 
@@ -104,6 +115,27 @@ def check_mixed_terms_strict(text: str) -> list[tuple[int, str]]:
     return out
 
 
+def check_english_punctuation(text: str) -> list[tuple[int, str]]:
+    """规则 5（v4.2 新增）：中文段落里残留英文标点 , . : ; 。
+
+    检测模式：英文标点直接邻接中文字符，且不在代码块 / URL / 英文专名后。
+    例：'数据, 算法' (英文逗号紧邻中文) FAIL
+    例：'GitHub, Anthropic' (英文专名间) PASS
+    """
+    cn = r'[一-鿿]'
+    # 英文标点紧邻中文字符
+    en_punct_after_cn = re.compile(rf'{cn}[,.:;]\s*{cn}')
+    en_punct_before_cn = re.compile(rf'[a-zA-Z]{cn}')  # 这个本身被 mixed_terms 抓
+    out = []
+    for i, line in enumerate(text.split('\n'), 1):
+        # 跳过 markdown 表格行（用 | 分隔）
+        if line.strip().startswith('|') and line.count('|') >= 2:
+            continue
+        if en_punct_after_cn.search(line):
+            out.append((i, line[:120]))
+    return out
+
+
 def main(path: str) -> int:
     raw = open(path).read()
     text = strip_code_and_links(raw)
@@ -113,6 +145,7 @@ def main(path: str) -> int:
         ('§1.4.111 直角引号 「」『』（港台 / 日式）', check_corner_quotes(text)),
         ('§1.4.112 数学符号代替自然语言（+ = →）', check_math_symbols(text)),
         ('§1.4.113 中英紧贴缝合词（无空格）', check_mixed_terms_strict(text)),
+        ('§1.4.117 中文段落英文标点穿插', check_english_punctuation(text)),
     ]
 
     total = sum(len(v) for _, v in rules)
