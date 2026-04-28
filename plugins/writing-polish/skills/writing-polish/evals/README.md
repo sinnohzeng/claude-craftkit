@@ -50,3 +50,21 @@ bash scripts/scan-ai-taste.sh /path/to/revised-output.md
 ## 维护
 
 每次 SKILL.md 或 references/anti-ai-taste-anchors.md 重大变更后，跑全部 5 条 test，记录通过率。
+
+## 重要约定：规则文档与产出文档的差异
+
+`scripts/scan-ai-taste.sh` 是**给产出文稿用的闸门**，不是给规则定义文档用的。
+
+以下文档**不需要通过 scan**（它们必然 FAIL，因为要列举禁用词让 Claude 学习）：
+
+- `SKILL.md`：含 §4.2 L2 心理 grep checklist 和 §4.3 红线快速 checklist，列举所有禁用模式
+- `references/anti-ai-taste-anchors.md`：完整 110 条规则定义
+- `references/ai-taste-examples.md`：10 段反例对照（含原始 AI 味文本）
+
+以下文档**应该通过 scan**：
+
+- 项目根目录 `README.md`（产品介绍，面向用户）
+- 任何用户提交的修改稿
+- 任何写作辅助产出的初稿和定稿
+
+dogfooding 验证范围：scan 工具是给"用户拿到的产出物"做闸门，不强求"工具自身的规则定义文档"过闸门。这是工具与规则的边界。

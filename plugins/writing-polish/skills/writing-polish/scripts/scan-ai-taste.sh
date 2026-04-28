@@ -24,6 +24,18 @@ if [ ! -f "$FILE" ]; then
     exit 3
 fi
 
+# 预处理：豁免 <!-- scan-skip --> 至 <!-- /scan-skip --> 之间的段落
+# 元论述（规则定义、错误对照、引用违规词举例）专用
+ORIG_FILE="$FILE"
+SCAN_TMP=$(mktemp -t scan-ai-taste.XXXXXX.md)
+trap 'rm -f "$SCAN_TMP"' EXIT
+awk '
+    /<!-- *scan-skip *-->/ { skip=1; print ""; next }
+    /<!-- *\/scan-skip *-->/ { skip=0; print ""; next }
+    { if (skip) print ""; else print $0 }
+' "$ORIG_FILE" > "$SCAN_TMP"
+FILE="$SCAN_TMP"
+
 # 颜色（终端可识别时启用）
 if [ -t 1 ]; then
     RED='\033[0;31m'; YEL='\033[0;33m'; GRN='\033[0;32m'; NC='\033[0m'
@@ -79,6 +91,28 @@ if [ "$PAREN" -gt 0 ]; then
 else
     printf "  ${GRN}✓ 括号内补充 = 0${NC}\n"
 fi
+
+# §1.4.111-113 中文标点与中英混排（外置 python 检测器，分项报告）
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+QUOTE_OUTPUT=$(python3 "$SCRIPT_DIR/check-cn-quotes.py" "$FILE" 2>/dev/null || true)
+QUOTE_TOTAL=$(echo "$QUOTE_OUTPUT" | grep -oE 'TOTAL=[0-9]+' | head -1 | sed 's/TOTAL=//')
+[ -z "$QUOTE_TOTAL" ] && QUOTE_TOTAL=0
+
+# 分项展示
+while IFS= read -r line; do
+    if [[ "$line" == RULE=* ]]; then
+        rule_name=$(echo "$line" | sed 's/RULE=//' | sed 's/|COUNT=.*//')
+        rule_count=$(echo "$line" | grep -oE 'COUNT=[0-9]+' | sed 's/COUNT=//')
+        if [ "$rule_count" -gt 0 ]; then
+            printf "  ${RED}✗ %s: %d${NC}\n" "$rule_name" "$rule_count"
+            VIOLATIONS=$((VIOLATIONS + 1))
+        else
+            printf "  ${GRN}✓ %s = 0${NC}\n" "$rule_name"
+        fi
+    elif [[ "$line" == "  "* ]] && [ "$rule_count" -gt 0 ]; then
+        echo "$line"
+    fi
+done <<< "$QUOTE_OUTPUT"
 echo
 
 # ----------------------------------------------------------
@@ -178,6 +212,55 @@ check_density() {
 check_density "已经" "$YIJING" 3
 check_density "核心" "$HEXIN" 3
 check_density "这一" "$ZHEYI" 2
+echo
+
+# ----------------------------------------------------------
+# §1.5 戏剧化偏好 / 互联网大厂黑话 / 网络口语（v4.1 新增）
+# ----------------------------------------------------------
+echo "▼ §1.5 戏剧化 / 大厂黑话 / 网络口语（阈值 = 0）"
+
+# §1.5.1 战斗化 / 戏剧化叙事
+DRAMA="三件武器|三大武器|杀手锏|撒手锏|三层防御|多重防御|立体防御|防火墙|闸门|自动闸门|兜底闸门|战场|主战场|阵地|武器化|装备化|装上一套|加装一套|跑通|走通|起飞|吐文字|吐结果|喷出|蹦出|王炸|大招|终极武器|杀招|打怪升级|通关"
+DRAMA_COUNT=$(count_pattern "$DRAMA" "$FILE")
+if [ "$DRAMA_COUNT" -gt 0 ]; then
+    printf "  ${RED}✗ §1.5.1 战斗化叙事: %d 处${NC}\n" "$DRAMA_COUNT"
+    grep -nE "$DRAMA" "$FILE" | head -3 | sed 's/^/    /'
+    VIOLATIONS=$((VIOLATIONS + 1))
+else
+    printf "  ${GRN}✓ §1.5.1 战斗化叙事 = 0${NC}\n"
+fi
+
+# §1.5.2 互联网大厂黑话扩展（除已有 §1.1 公文黑话外）
+JARGON="拉通|颗粒度|打法|玩法|沉淀下来|对标|抢占心智|占领心智|用户心智|生态化反|赛道|切赛道|抢赛道|抓总|跑出来|跑通模型|下沉市场|底层逻辑|顶层设计|价值锚点"
+JARGON_COUNT=$(count_pattern "$JARGON" "$FILE")
+if [ "$JARGON_COUNT" -gt 0 ]; then
+    printf "  ${RED}✗ §1.5.2 互联网大厂黑话: %d 处${NC}\n" "$JARGON_COUNT"
+    grep -nE "$JARGON" "$FILE" | head -3 | sed 's/^/    /'
+    VIOLATIONS=$((VIOLATIONS + 1))
+else
+    printf "  ${GRN}✓ §1.5.2 互联网大厂黑话 = 0${NC}\n"
+fi
+
+# §1.5.3 网络口语 / 网感词
+NETSPEAK="本仓库|本文|本号|本站|锚点|硬约束|硬规则|硬指标|dogfooding|吃自己狗粮|降智|智商税|裂开|蚌埠住了|绷不住了|绝绝子|YYDS|永远滴神|拉胯|干货|满满的干货|种草|拔草|梭哈|押注|all in|All in|翻车|踩坑"
+NETSPEAK_COUNT=$(count_pattern "$NETSPEAK" "$FILE")
+if [ "$NETSPEAK_COUNT" -gt 0 ]; then
+    printf "  ${RED}✗ §1.5.3 网络口语 / 网感词: %d 处${NC}\n" "$NETSPEAK_COUNT"
+    grep -nE "$NETSPEAK" "$FILE" | head -3 | sed 's/^/    /'
+    VIOLATIONS=$((VIOLATIONS + 1))
+else
+    printf "  ${GRN}✓ §1.5.3 网络口语 / 网感词 = 0${NC}\n"
+fi
+
+# §1.5.4 程序员 / 产品经理腔（在非技术架构语境的滥用）
+PMS="MVP|PMF|冷启动|热启动|解耦|高内聚|新范式"
+PMS_COUNT=$(count_pattern "$PMS" "$FILE")
+if [ "$PMS_COUNT" -gt 0 ]; then
+    printf "  ${YEL}⚠ §1.5.4 程序员 / 产品经理腔: %d 处${NC} (技术语境合法)\n" "$PMS_COUNT"
+    WARNINGS=$((WARNINGS + 1))
+else
+    printf "  ${GRN}✓ §1.5.4 程序员 / 产品经理腔 = 0${NC}\n"
+fi
 echo
 
 # ----------------------------------------------------------
