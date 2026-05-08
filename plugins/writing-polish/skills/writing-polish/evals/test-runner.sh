@@ -113,6 +113,47 @@ for tid in $test_ids; do
 done
 
 echo
+
+# v4.3 双轨化：regression_fixtures 跑批（scan 脚本回归测试）
+echo "================================================"
+echo "  v4.3 regression_fixtures（scan 脚本回归测试）"
+echo "================================================"
+echo
+
+REG_TOTAL=0
+REG_PASS=0
+REG_FAIL=0
+
+# 兼容老版 evals.json（无 regression_fixtures 数组）
+reg_ids=$(jq -r '.regression_fixtures // [] | .[].id' "$EVALS_FILE" 2>/dev/null)
+if [ -z "$reg_ids" ]; then
+    echo "  (本仓暂无 regression_fixtures，跳过)"
+    echo
+else
+    for rid in $reg_ids; do
+        REG_TOTAL=$((REG_TOTAL + 1))
+        fix=$(jq -r ".regression_fixtures[] | select(.id == \"$rid\") | .fixture" "$EVALS_FILE")
+        expected_exit=$(jq -r ".regression_fixtures[] | select(.id == \"$rid\") | .expected_exit_code" "$EVALS_FILE")
+        title=$(jq -r ".regression_fixtures[] | select(.id == \"$rid\") | .title // \"\"" "$EVALS_FILE")
+
+        printf "  [%d] %s — %s\n" "$REG_TOTAL" "$rid" "$title"
+        bash "$SKILL_DIR/scripts/scan-ai-taste.sh" "$SKILL_DIR/$fix" >/dev/null 2>&1
+        actual_exit=$?
+
+        if [ "$actual_exit" = "$expected_exit" ]; then
+            printf "      ${GRN}[PASS]${NC} exit=%s (期望=%s)\n" "$actual_exit" "$expected_exit"
+            REG_PASS=$((REG_PASS + 1))
+        else
+            printf "      ${RED}[FAIL]${NC} exit=%s (期望=%s)\n" "$actual_exit" "$expected_exit"
+            REG_FAIL=$((REG_FAIL + 1))
+        fi
+    done
+    echo
+    printf "  Regression: %d  ${GRN}PASS: %d${NC}  ${RED}FAIL: %d${NC}\n" "$REG_TOTAL" "$REG_PASS" "$REG_FAIL"
+    echo
+    FAIL=$((FAIL + REG_FAIL))
+fi
+
 echo "================================================"
 printf "  Total: %d  ${GRN}PASS: %d${NC}  ${RED}FAIL: %d${NC}  ${YEL}SKIP: %d${NC}\n" "$TOTAL" "$PASS" "$FAIL" "$SKIP"
 

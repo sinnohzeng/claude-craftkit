@@ -100,6 +100,53 @@ count_pattern() {
     echo "$result"
 }
 
+# v4.3 上下文感知白名单：词命中后看 ±2 行窗口是否含白名单关键词，含则豁免
+# 用法：count_with_context_whitelist <WORD_REGEX> <WHITELIST_REGEX> <FILE>
+# 返回：被判违规的命中数（总命中 - 落在白名单上下文的命中）
+count_with_context_whitelist() {
+    local word="$1"
+    local whitelist="$2"
+    local file="$3"
+    local total whitelisted=0
+    total=$(count_pattern "$word" "$file")
+    [ "$total" -eq 0 ] && { echo 0; return; }
+    while IFS=: read -r ln _; do
+        [ -z "$ln" ] && continue
+        local start=$((ln > 2 ? ln - 2 : 1))
+        local end=$((ln + 2))
+        if sed -n "${start},${end}p" "$file" 2>/dev/null | grep -qE "$whitelist"; then
+            whitelisted=$((whitelisted + 1))
+        fi
+    done < <(grep -nE "$word" "$file" 2>/dev/null)
+    echo $((total - whitelisted))
+}
+
+# v4.3 句子数计算（与句长方差段口径一致）
+sentence_count() {
+    local file="$1"
+    python3 -c "
+import re, sys
+try:
+    text = open('$file').read()
+    sents = [s for s in re.split('[。！？；]', text) if 5 < len(s) < 200]
+    print(len(sents))
+except Exception:
+    print(0)
+" 2>/dev/null || echo 0
+}
+
+# v4.3 软阈值动态化：按千句密度 ≤ base 计算阈值
+# 短文（< 200 句）= base；中文（200-500）= base*2；长文（500-1000）= base*3；超长（≥1000）= base*5
+threshold_for_length() {
+    local base="$1"
+    local sents="$2"
+    if   [ "$sents" -lt 200 ];  then echo "$base"
+    elif [ "$sents" -lt 500 ];  then echo $((base * 2))
+    elif [ "$sents" -lt 1000 ]; then echo $((base * 3))
+    else echo $((base * 5))
+    fi
+}
+
 # 改写建议表（仅在 --suggest-fix 模式下输出）
 suggest_for() {
     case "$1" in
@@ -112,8 +159,10 @@ suggest_for() {
         cn_hard) echo "    改写：详见 anti-ai-taste-anchors.md §1.1，改成具体动词或事实陈述";;
         en_hard) echo "    改写：详见 anti-ai-taste-anchors.md §1.2，删修饰留事实";;
         sanduan) echo "    改写：'首先 / 其次 / 最后'改成'一是 / 二是 / 三是'党政公文体例";;
-        drama) echo "    改写：详见 anti-ai-taste-anchors.md §1.5.1，去战斗化叙事";;
-        jargon) echo "    改写：详见 anti-ai-taste-anchors.md §1.5.2，去大厂黑话";;
+        drama) echo "    改写：详见 anti-ai-taste-anchors.md §1.5.1，去战斗化叙事";
+               echo "         如确为 IT 实物语境（机房 / 等保 / WAF / 入侵检测 / NGFW），±2 行内含 IT 关键词即可豁免";;
+        jargon) echo "    改写：详见 anti-ai-taste-anchors.md §1.5.2，去大厂黑话";
+                echo "         如确为党政咨询语境（同级对标 / 对标先进 / 对标启示），±2 行内含公文关键词即可豁免";;
         netspeak) echo "    改写：详见 anti-ai-taste-anchors.md §1.5.3，去网络口语";;
         meta) echo "    改写：删除元注释 / 自我介绍 / 免责声明 / 服务话术，直接进入正文";;
         wp_long) echo "    改写：详见 anti-ai-taste-anchors.md §1.7，清理 AI 工具输出残留";;
@@ -273,9 +322,14 @@ fi
 echo
 
 # ----------------------------------------------------------
-# §4 软阈值（密度限制）
+# §4 软阈值（密度限制，v4.3 按文长动态化）
 # ----------------------------------------------------------
-echo "▼ §4 软阈值（密度限制）"
+SENT_COUNT=$(sentence_count "$FILE")
+HEXIN_THRESH=$(threshold_for_length 3 "$SENT_COUNT")
+YIJING_THRESH=$(threshold_for_length 3 "$SENT_COUNT")
+ZHEYI_THRESH=$(threshold_for_length 2 "$SENT_COUNT")
+
+echo "▼ §4 软阈值（密度限制，文长 ${SENT_COUNT} 句 → 千句密度阈值动态计算）"
 YIJING=$(count_pattern "已经" "$FILE")
 HEXIN=$(count_pattern "核心" "$FILE")
 ZHEYI=$(count_pattern "这一" "$FILE")
@@ -292,9 +346,9 @@ check_density() {
     fi
 }
 
-check_density "已经" "$YIJING" 3
-check_density "核心" "$HEXIN" 3
-check_density "这一" "$ZHEYI" 2
+check_density "已经" "$YIJING" "$YIJING_THRESH"
+check_density "核心" "$HEXIN" "$HEXIN_THRESH"
+check_density "这一" "$ZHEYI" "$ZHEYI_THRESH"
 echo
 
 # ----------------------------------------------------------
@@ -302,9 +356,14 @@ echo
 # ----------------------------------------------------------
 echo "▼ §1.5 戏剧化 / 大厂黑话 / 网络口语（阈值 = 0）"
 
-# §1.5.1 战斗化 / 戏剧化叙事
-DRAMA="三件武器|三大武器|杀手锏|撒手锏|三层防御|多重防御|立体防御|防火墙|闸门|自动闸门|兜底闸门|战场|主战场|阵地|武器化|装备化|装上一套|加装一套|跑通|走通|起飞|吐文字|吐结果|喷出|蹦出|王炸|大招|终极武器|杀招|打怪升级|通关"
-DRAMA_COUNT=$(count_pattern "$DRAMA" "$FILE")
+# §1.5.1 战斗化 / 戏剧化叙事（v4.3 防火墙拆出走 IT 上下文白名单）
+DRAMA_GENERIC="三件武器|三大武器|杀手锏|撒手锏|三层防御|多重防御|立体防御|闸门|自动闸门|兜底闸门|战场|主战场|阵地|武器化|装备化|装上一套|加装一套|跑通|走通|起飞|吐文字|吐结果|喷出|蹦出|王炸|大招|终极武器|杀招|打怪升级|通关"
+# IT 实物语境白名单：等保 / 网络架构 / 设备类别 / 部署语句
+DRAMA_IT_WHITELIST="机房|等保|GB/T 22239|服务器|端口|协议|入侵检测|网络架构|网络分区|网络边界|访问控制|安全组|子网|VPC|VPN|路由|交换机|WAF|Web 应用|UTM|IDS|IPS|NGFW|部署.{0,5}台|配置规则|防护设备|安全设备|网络安全|数据中心|云服务|裸金属"
+FW_DRAMA=$(count_with_context_whitelist "防火墙" "$DRAMA_IT_WHITELIST" "$FILE")
+DRAMA_COUNT=$(count_pattern "$DRAMA_GENERIC" "$FILE")
+DRAMA_COUNT=$((DRAMA_COUNT + FW_DRAMA))
+DRAMA="$DRAMA_GENERIC|防火墙"  # 仅用于 grep -nE 行号展示
 if [ "$DRAMA_COUNT" -gt 0 ]; then
     printf "  ${RED}✗ §1.5.1 战斗化叙事: %d 处${NC}\n" "$DRAMA_COUNT"
     grep -nE "$DRAMA" "$FILE" | head -3 | sed 's/^/    /'
@@ -315,9 +374,14 @@ else
     printf "  ${GRN}✓ §1.5.1 战斗化叙事 = 0${NC}\n"
 fi
 
-# §1.5.2 互联网大厂黑话扩展（除已有 §1.1 公文黑话外）
-JARGON="拉通|颗粒度|打法|玩法|沉淀下来|对标|抢占心智|占领心智|用户心智|生态化反|赛道|切赛道|抢赛道|抓总|跑出来|跑通模型|下沉市场|底层逻辑|顶层设计|价值锚点|赛马机制|内部赛马|跑赢大盘|跑赢市场|三件套|组合拳|铁三角|冲业绩"
-JARGON_COUNT=$(count_pattern "$JARGON" "$FILE")
+# §1.5.2 互联网大厂黑话扩展（v4.3 对标拆出走党政 / 咨询语境白名单）
+JARGON_GENERIC="拉通|颗粒度|打法|玩法|沉淀下来|抢占心智|占领心智|用户心智|生态化反|赛道|切赛道|抢赛道|抓总|跑出来|跑通模型|下沉市场|底层逻辑|顶层设计|价值锚点|赛马机制|内部赛马|跑赢大盘|跑赢市场|三件套|组合拳|铁三角|冲业绩"
+# 党政公文 / 咨询语境白名单：政府工作报告 / 党的二十大 / 同级 / 国际先进等
+JARGON_GOV_WHITELIST="政府工作报告|党中央|党的二十大|二十届|总书记|讲话精神|对标对表|对标先进|对标一流|对标国际|对标国内|同级|同业|国际先进|行业领先|启示|案例|经验|做法|建设方案|实施方案|发展规划|高质量发展|党建|政治学习|十四五|十五五"
+DB_JARGON=$(count_with_context_whitelist "对标" "$JARGON_GOV_WHITELIST" "$FILE")
+JARGON_COUNT=$(count_pattern "$JARGON_GENERIC" "$FILE")
+JARGON_COUNT=$((JARGON_COUNT + DB_JARGON))
+JARGON="$JARGON_GENERIC|对标"  # 仅用于 grep -nE 行号展示
 if [ "$JARGON_COUNT" -gt 0 ]; then
     printf "  ${RED}✗ §1.5.2 互联网大厂黑话: %d 处${NC}\n" "$JARGON_COUNT"
     grep -nE "$JARGON" "$FILE" | head -3 | sed 's/^/    /'

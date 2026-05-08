@@ -409,5 +409,49 @@
       "tool": "evals/test-runner.sh --regression",
       "description": "Compare PASS count vs last release"
     }
-  }
+  },
+  "regression_fixtures": [
+    {
+      "id": "reg-01-it-firewall-whitelist",
+      "title": "改进 1 IT 防火墙白名单（正向）",
+      "fixture": "evals/fixtures/it-firewall.md",
+      "expected_exit_code": 0,
+      "rationale": "防火墙在 ±2 行 IT 关键词上下文应豁免（机房 / 等保 / WAF / NGFW）"
+    },
+    {
+      "id": "reg-02-drama-firewall-sentinel",
+      "title": "改进 1 隐喻防火墙反向哨兵（应继续 FAIL）",
+      "fixture": "evals/fixtures/drama-firewall.md",
+      "expected_exit_code": 1,
+      "rationale": "防火墙 +「三层防御」「多重」隐喻战斗化语境必须仍然命中"
+    },
+    {
+      "id": "reg-03-gov-duibiao-whitelist",
+      "title": "改进 2 党政对标白名单（正向）",
+      "fixture": "evals/fixtures/gov-duibiao.md",
+      "expected_exit_code": 0,
+      "rationale": "对标在党政 / 咨询语境（同级 / 先进 / 启示）应豁免"
+    },
+    {
+      "id": "reg-04-jargon-duibiao-sentinel",
+      "title": "改进 2 大厂对标反向哨兵（应继续 FAIL）",
+      "fixture": "evals/fixtures/jargon-duibiao.md",
+      "expected_exit_code": 1,
+      "rationale": "对标 + 赛马 / 拉通 / 颗粒度 大厂语境必须仍然命中"
+    },
+    {
+      "id": "reg-05-long-form-density",
+      "title": "改进 4 长文密度动态阈值（应 WARN 句长方差软阈值，红线全过）",
+      "fixture": "evals/fixtures/long-form-density.md",
+      "expected_exit_code": 2,
+      "rationale": "1000+ 句含 12 处「核心」按千句密度阈值 ≤ 15 PASS；句长方差因构造重复 WARN（exit=2 是正确的软阈值警告）"
+    },
+    {
+      "id": "reg-06-short-form-density-sentinel",
+      "title": "改进 4 短文密度阈值（应 WARN，反向哨兵）",
+      "fixture": "evals/fixtures/short-form-density.md",
+      "expected_exit_code": 2,
+      "rationale": "短文（< 200 句）维持原阈值 ≤ 3，含 8 处「核心」必须仍触发 WARN"
+    }
+  ]
 }
